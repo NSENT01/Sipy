@@ -80,9 +80,9 @@ export const AuthProvider = ({children}: any) => {
             
             // define image object attribtutes
             formData.append("profile_image", {
-            uri: profile_image_uri,
-            name: `${username}_profile_image.jpg`,
-            type: "image/jpeg",
+                uri: profile_image_uri,
+                name: `${username}_profile_image.jpg`,
+                type: "image/jpeg",
             } as any);
 
             const response = await fetch(`${API_URL}/register/`, {
@@ -93,6 +93,9 @@ export const AuthProvider = ({children}: any) => {
             );
 
             if (!response.ok) {
+                console.log("status", response.status);
+                const text = await response.text();
+                console.log("body", text);
                 throw new Error("Register failed");
             }
 

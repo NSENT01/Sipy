@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Pressable, Button, TouchableOpacity } from 'react-native'
+import { View, Text, TextInput, Pressable, Button, Keyboard, TouchableWithoutFeedback } from 'react-native'
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { Redirect, router, Stack } from 'expo-router';
@@ -21,31 +21,18 @@ const login = () => {
             alert(result.msg);
         } else {
             console.log("Login successful");
-            router.push("/(tabs)");
         }
     }
   return (
-    <>
-    <Stack.Screen
-        options={{
-            headerTitle: "",
-            headerTransparent: false,
-            headerShadowVisible: false,
-
-            headerLeft: () => (
-            <Pressable
-                onPress={() => router.back()}
-                style={{
-                backgroundColor: 'white',
-                shadowColor: 'transparent',
-                }}
-            >
-                <Ionicons name="arrow-back" size={24} color="#2D5A3D" />
-            </Pressable>
-            ),
-        }}
-        />
-    <View style={styles.container}>
+    
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <View style={styles.loginContainer}>
+    <Pressable
+        onPress={() => router.back()}
+        style={styles.backButton}
+    >
+        <Ionicons name="arrow-back" size={32} color="#2D5A3D" />
+    </Pressable>
       <Text style={styles.title}>Welcome back!</Text>
       <Text>Already created an account? Login below.</Text>
       <TextInput 
@@ -63,9 +50,10 @@ const login = () => {
         onChangeText={setPassword}
         secureTextEntry 
       />
-      <Button title="Login" onPress={handleLogin}/>
+      <Pressable style={styles.largeButton}onPress={handleLogin}><Text style={{ color: "white", fontSize: 17, fontFamily: 'arial' }}>Login</Text></Pressable>
     </View>
-    </>
+    
+    </TouchableWithoutFeedback>
   )
 }
 

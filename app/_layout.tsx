@@ -68,11 +68,11 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={DefaultTheme}>
-      <Stack screenOptions={{ headerShown: true }}>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="login" />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index"/>
+        <Stack.Screen name="login"/>
         <Stack.Screen name="register"/>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }}/>
+        <Stack.Screen name="(tabs)"/>
         <Stack.Screen
           name="modal"
           options={{ presentation: "modal" }}

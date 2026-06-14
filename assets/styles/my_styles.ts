@@ -7,7 +7,19 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     backgroundColor: "white",
+    width: '100%',
     paddingTop: StatusBar.currentHeight || 70,
+  },
+  loginContainer: {
+    flex: 1,
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    backgroundColor: "white",
+    width: '100%',
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingTop: StatusBar.currentHeight || 70,
+    gap: 12,
   },
   landingContainer: {
     flex: 1,
@@ -16,8 +28,9 @@ export const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   title: {
-    fontSize: 20,
+    fontSize: 40,
     fontWeight: 'bold',
+    fontFamily: 'georgia',
     backgroundColor: "clear",
     color: "black"
   },
@@ -42,10 +55,10 @@ export const styles = StyleSheet.create({
     borderColor: "grey",
     borderRadius: 8,
     padding: 8,
-    borderWidth: 1,
-    marginBottom: 8,
-    height: 80,
-    width: '85%',
+    borderBottomWidth: 1,
+    marginBottom: 12,
+    height: 50,
+    width: '100%',
   },
   gradientBackground: {
     flex: 1,
@@ -71,6 +84,13 @@ export const styles = StyleSheet.create({
     height: 130,
     marginBottom: 20,
   },
+  profileImage: {
+    alignSelf: 'center',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 20,
+  },
   largeButton: {
     backgroundColor: "#2D5A3D",
     color: "white",
@@ -81,6 +101,19 @@ export const styles = StyleSheet.create({
     width: '85%',
     alignItems: 'center',
     justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  largeBackButton: {
+    backgroundColor: "lightgrey",
+    color: "white",
+    borderRadius: 32,
+    padding: 12,
+    marginBottom: 8,
+    height: 50,
+    width: '85%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
   },
   topPadding: {
     flex: 1,
@@ -93,5 +126,8 @@ export const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     width: '100%',
+  },
+  backButton: {
+    alignSelf: 'flex-start',
   },
 });

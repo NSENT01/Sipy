@@ -11,6 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 const logo = require("../../assets/images/sipy.png")
+const headerValue = useClientOnlyValue(false, true);
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
@@ -24,7 +25,7 @@ export default function TabLayout() {
   const { authState, onLogout } = useAuth();
 
   if (!authState?.authenticated) {
-    return <Redirect href="/" />;
+    return <Redirect href="/login" />;
   }
 
   const handleLogout = async () => {
@@ -42,7 +43,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
+        headerShown: headerValue,
         headerLeft: () => {
           return <Image source={logo} style={{ width: 30, height: 30, marginLeft: 10 }} />;
         },
