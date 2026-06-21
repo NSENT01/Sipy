@@ -1,19 +1,84 @@
 import { Pressable, StatusBar, Image, FlatList } from 'react-native';
-import { styles } from "../../assets/styles/my_styles"
+import { styles } from "../assets/styles/my_styles"
 import { useContext, useState, useEffect } from 'react';
-import {ProfileContext} from './_layout'
+import { API_URL, useAuth } from "../context/AuthContext"
+import { Redirect, useLocalSearchParams, router } from 'expo-router'
+
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
 
-export default function TabTwoScreen() {
-  const profileData = useContext(ProfileContext);
-  const [selectedTab, setSelectedTab] = useState("activity");
-  console.log(profileData);
+const profileModal = () => {
+    const params = useLocalSearchParams()
+    const { authState, refreshToken, onLogout } = useAuth();
+    const [selectedTab, setSelectedTab] = useState('activity');
+    const [profileData, setProfileData] = useState<any>(null);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        const getProfileData = async () => {
+            await handleProfileGet()
+        }
+        if (authState?.access_token && !profileData) {
+            getProfileData()
+        }
+        
+    }, [authState?.access_token, profileData])
+        
+
+    if (!authState?.authenticated) {
+        return <Redirect href="/login" />;
+    }
+
+    const handleLogout = async () => {
+        const result = await onLogout!();
+        if (result && result.error) {
+            alert(result.msg);
+        } else {
+            console.log("Logout successful");
+        }
+    };
+
+    const handleProfileGet = async () => {
+        try {
+            const response = await fetch(`${API_URL}/get_other_profile/?id=${encodeURIComponent(String(params.profileId))}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authState?.access_token}`
+                }
+            })
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    // Token is invalid, try to refresh it
+                    const refreshed = await refreshToken!();
+                    if (refreshed?.error) {
+                        handleLogout();
+                    }
+                }
+                console.log(await response.text());
+                return;
+            }
+
+            const data = await response.json()
+            setProfileData(data)
+            
+        } catch (error) {
+            console.error("There was an error fetching the profile:", error);
+            setError("There was an error fetching the profile");
+        }
+    }
+
 
   return (
-    <View style={styles.insideContainer}>
+    <View style={styles.container}>
+        <View style={{  width: '100%', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', backgroundColor: "white" }}>
+        <Pressable style={{ marginLeft: 20, marginBottom: 10, justifyContent: 'center' }} onPress={() => router.back()}>
+            <Ionicons name='chevron-back' size={24} color="black" />
+        </Pressable>
+        <Text style={{ fontWeight: 'bold', fontSize: 20, marginLeft: 20, color: "black" }}>{profileData?.first_name} {profileData?.last_name}</Text>
+        </View>
       <StatusBar barStyle="dark-content" />
       <View style={styles.separator} />
       <Pressable style={styles.profileImage}>
@@ -37,7 +102,6 @@ export default function TabTwoScreen() {
           <Text style={styles.profileInfoText}>Ratings</Text>
         </View>
       </View>
-      <Pressable style={styles.profileButton}><Text style={{ color: "black", fontSize: 16 }}>Edit Profile</Text></Pressable>
       <View style={styles.searchTabs}>
         <Pressable onPress={() => setSelectedTab('activity')} style={selectedTab === 'activity' ? styles.activeTab : styles.inactiveTab}>
           <Ionicons name="cafe-outline" size={24} color={selectedTab === 'activity' ? "#2D5A3D" : "black"} /><Text style={selectedTab === 'activity' ? styles.activeTabText : styles.inactiveTabText}>Your Activity</Text>
@@ -50,7 +114,7 @@ export default function TabTwoScreen() {
       { selectedTab === "activity" ? (
         <View>
           <FlatList
-        data={profileData.user_rankings}
+        data={profileData?.user_rankings}
         style={{ width: '100%', flex: 1, backgroundColor: "white", marginBottom: 340 }}
         renderItem={({ item }: {item: any}) => (
           <View
@@ -102,6 +166,7 @@ export default function TabTwoScreen() {
         </View>
       )}
     </View>
-  );
+  )
 }
 
+export default profileModal

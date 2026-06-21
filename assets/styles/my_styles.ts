@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native'
 import { StatusBar } from 'react-native';
+import { SearchBar } from 'react-native-screens';
 
 export const styles = StyleSheet.create({
   container: {
@@ -9,6 +10,46 @@ export const styles = StyleSheet.create({
     backgroundColor: "white",
     width: '100%',
     paddingTop: StatusBar.currentHeight || 70,
+  },
+  insideContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    backgroundColor: "white",
+    width: '100%',
+  },
+  searchBox: {
+    backgroundColor: "white",
+    padding: 20,
+    shadowOpacity: 0.1,
+    
+    height: 75,
+    width: '100%',
+  },
+  searchBoxGoogle: {
+    backgroundColor: "white",
+    flex: 1,
+    padding: 20,
+    
+    width: '100%',
+    zIndex: 11,
+  },
+  restaurantSearch: {
+    backgroundColor: "lightgray",
+    borderColor: "lightgray",
+    borderRadius: 8,
+    padding: 8,
+    borderBottomWidth: 1,
+    display: 'flex',
+    flexDirection: 'row',
+    height: 40,
+    width: '100%',
+    alignSelf: 'center',
+    alignItems: 'center',
+  },
+  searchPlaceholder: {
+    color: "gray",
+    fontSize: 16,
   },
   loginContainer: {
     flex: 1,
@@ -44,9 +85,9 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
   },
   separator: {
-    marginVertical: 30,
+    marginVertical: 10,
     height: 1,
-    width: '80%',
+    width: '100%',
     backgroundColor: "white",
     color: "black"
   },
@@ -63,6 +104,156 @@ export const styles = StyleSheet.create({
   gradientBackground: {
     flex: 1,
     justifyContent: 'center',
+  },
+  
+  gradientBackgroundCafe: {
+    flex: 1,
+    justifyContent: 'center',
+    height: 300,
+    backgroundColor: 'clear',
+    marginBottom: 5,
+  },
+  imageBackgroundCafe: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    padding: 20,
+  },
+  cafeTitle: {
+    fontFamily: 'georgia',
+    fontSize: 48,
+    fontWeight: 500,
+    color: 'black',
+    alignSelf: 'flex-start',
+    marginBottom: 10,
+  },
+  avgRankingWrapper: {
+    width: 30,
+    height: 25,
+    backgroundColor: '#00bf63',
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  avgRanking: {
+    color: 'white',
+    fontFamily: 'arial',
+    fontWeight: 500,
+    fontSize: 17,
+  },
+  numReviews: {
+    fontSize: 16,
+    fontWeight: 500,
+    color: '#2D5A3D',
+    fontFamily: 'arial'
+  },
+  cafeRankings: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  cafeRankingStats: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  cafeActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    
+  },
+  cafeContacts: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 15,
+  },
+  cafeAddress: {
+    fontFamily: 'georgia',
+    fontWeight: 500,
+    color: '#2D5A3D',
+    fontSize: 16,
+    marginBottom: 15,
+  },
+  cafeWebsite: {
+    width: 90,
+    height: 32,
+    borderWidth: 1,
+    borderRadius: 16,
+    borderColor: '#2D5A3D',
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row'
+  },
+  cafeWebsiteText: {
+    color: '#2D5A3D',
+    fontFamily: 'arial',
+    fontSize: 18,
+  },
+  cafeNumber: {
+    width: 70,
+    height: 30,
+    borderWidth: 1,
+    borderRadius: 16,
+    borderColor: '#2D5A3D',
+    backgroundColor: 'white'
+  },
+  scoreCards: {
+    gap: 10,
+  },
+  scoreCardContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  scoreContainer: {
+    width: 55,
+    height: 55,
+    borderRadius: 100,
+    borderColor: "gray",
+    borderWidth: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 5,
+  },
+  scoreContainerSmall: {
+    width: 40,
+    height: 40,
+    borderRadius: 100,
+    borderColor: "gray",
+    borderWidth: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 5,
+  },
+  scoreContainerSmallInside: {
+    width: 40,
+    height: 40,
+    borderRadius: 100,
+    borderColor: "gray",
+    borderWidth: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 5,
+    backgroundColor: "white"
+  },
+  scoreCardRateSmall: {
+    fontFamily: "serif",
+    fontSize: 18,
+    fontWeight: 600,
+    color: "#109755"
+  },
+  scoreCardRate: {
+    fontFamily: "serif",
+    fontSize: 28,
+    fontWeight: 600,
+    color: "#109755"
+  },
+  scoreCardSecondaryText: {
+    fontFamily: "serif",
+    fontSize: 16,
+    fontWeight: 600,
   },
   imageBackground: {
     flex: 1,
@@ -90,6 +281,26 @@ export const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "lightgray",
+  },
+  profileImageSmall: {
+    alignSelf: 'center',
+    width: 70,
+    height: 70,
+    borderRadius: 50,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "lightgray",
+  },
+  profileImageSmaller: {
+    alignSelf: 'center',
+    width: 50,
+    height: 50,
+    borderRadius: 50,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "lightgray",
   },
   largeButton: {
     backgroundColor: "#2D5A3D",
@@ -129,5 +340,206 @@ export const styles = StyleSheet.create({
   },
   backButton: {
     alignSelf: 'flex-start',
+  },
+  username: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    backgroundColor: "clear",
+    color: "black",
+    fontFamily: 'arial',
+    marginBottom: 10,
+  },
+  bioText: {
+    fontSize: 16,
+    fontWeight: 'normal',
+    backgroundColor: "clear",
+    color: "black",
+    fontFamily: 'arial',
+    marginBottom: 24,
+  },
+  profileInfo: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '80%',
+    marginBottom: 20,
+    backgroundColor: "white",
+    color: "black"
+  },
+  profileInfoItem: {
+    alignItems: 'center',
+    backgroundColor: 'white',
+  },
+  profileInfoNum: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    backgroundColor: "white",
+    color: "black",
+    fontFamily: 'arial',
+    marginBottom: 5,
+  },
+  profileInfoText: {
+    fontSize: 16,
+    fontWeight: 'normal',
+    backgroundColor: "white",
+    color: "gray",
+    fontFamily: 'arial',
+  },
+  profileButton: {
+    backgroundColor: "white",
+    color: "black",
+    borderColor: "lightgray",
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 0,
+    marginBottom: 8,
+    height: 30,
+    width: '60%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  searchTabs: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    zIndex: 10,
+  },
+  activeTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: "white",
+    borderBottomWidth: 1,
+    borderColor: "#2D5A3D",
+    width: '50%',
+    height: 40,
+  },
+  activeTabText: {
+    color: "#2D5A3D",
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  inactiveTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: "white",
+    justifyContent: 'center',
+    borderColor: "clear",
+    width: '50%',
+    height: 40,
+  },
+  inactiveTabText: {
+    color: "black",
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  backdropContainer: {
+    flex: 1,
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rankingModal: {
+    width: "100%",
+    padding: 15,
+    paddingBottom: 30,
+  },
+  modalTitle: {
+    flex: 1,
+    marginBottom: 6,
+    borderRadius: 16,
+    backgroundColor: "white",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 15,
+    alignItems: "center",
+  },
+  modalTitleText: {
+    fontSize: 28,
+    fontFamily: 'Georgia',
+    fontWeight: 600,
+  },
+  modalCategory: {
+    flex: 1,
+    marginVertical: 6,
+    borderRadius: 16,
+    backgroundColor: "white",
+    padding: 15,
+    gap: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+        width: 0,
+        height: 0,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+
+    elevation: 3,
+  },
+  modalText: {
+    fontSize: 18,
+    fontFamily: 'arial',
+  },
+  selectText: {
+    color: "white",
+    fontFamily: "arial",
+    fontSize: 16,
+  },
+  nonSelectText: {
+    color: "black",
+    fontFamily: "arial",
+    fontSize: 16,
+  },
+  drinkCategory: {
+    height: 40, 
+    width: 120, 
+    marginHorizontal: 5, 
+    flexDirection: "row", 
+    alignItems: "center", 
+    justifyContent: "center", 
+    borderWidth: 1, 
+    borderColor: "#2D5A3D", 
+    borderRadius: 12
+  },
+  drinkCategorySelect: {
+    height: 40, 
+    width: 120, 
+    marginHorizontal: 5, 
+    flexDirection: "row", 
+    alignItems: "center", 
+    justifyContent: "center", 
+    backgroundColor: "#2D5A3D",
+    borderRadius: 12
+  },
+  drinkText: {
+    fontFamily: "serif",
+    fontSize: 16,
+  },
+  drinkTextSelected: {
+    fontFamily: "serif",
+    fontSize: 16,
+    color: "white"
+  },
+  submitModal: {
+    width: "80%",
+    marginVertical: 6,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 10,
+    borderRadius: 16,
+    backgroundColor: "#2D5A3D",
+    gap: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+        width: 0,
+        height: 0,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+
+    elevation: 3,
+    alignSelf: "center",
+    marginBottom: 30,
   },
 });

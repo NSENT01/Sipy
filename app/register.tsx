@@ -212,7 +212,13 @@ const register = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.loginContainer}>
         <Pressable
-            onPress={() => router.back()}
+            onPress={() => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace("/");
+                }
+              }}
             style={styles.backButton}
         >
             <Ionicons name="arrow-back" size={32} color="#2D5A3D" />

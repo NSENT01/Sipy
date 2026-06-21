@@ -2,7 +2,7 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack, router } from 'expo-router';
+import { Stack, Tabs, router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
@@ -13,6 +13,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { ActivityIndicator, Pressable } from 'react-native';
 import Ionicons from '@expo/vector-icons/build/Ionicons';
 import Colors from '@/constants/Colors';
+import {Image} from 'react-native'
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -25,7 +26,7 @@ export const unstable_settings = {
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -37,12 +38,6 @@ export default function RootLayout() {
   useEffect(() => {
     if (error) throw error;
   }, [error]);
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
 
   if (!loaded) {
     return null;
@@ -59,6 +54,8 @@ function AuthenticatedLayout() {
   )
 }
 
+
+
 function RootLayoutNav() {
   const { authState } = useAuth();
 
@@ -66,17 +63,40 @@ function RootLayoutNav() {
     return <ActivityIndicator/>; // or loading spinner
   }
 
+  
+
   return (
     <ThemeProvider value={DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index"/>
-        <Stack.Screen name="login"/>
-        <Stack.Screen name="register"/>
+        <Stack.Screen name="index" options={{ animation: "slide_from_left" }}/>
+        <Stack.Screen name="login" options={{ animation: "slide_from_right" }}/>
+        <Stack.Screen name="register" options={{ animation: "slide_from_right" }}/>
         <Stack.Screen name="(tabs)"/>
         <Stack.Screen
-          name="modal"
-          options={{ presentation: "modal" }}
-        />
+        name="searchModal"
+        options={{
+          presentation: "fullScreenModal",
+          title: "",
+          headerShown: false,
+          
+        }}
+      />
+      <Stack.Screen
+        name="cafeDetailModal"
+        options={{
+          presentation: "fullScreenModal",
+          title: "",
+          headerShown: false,
+          animation: 'none'
+        }}
+      />
+      <Stack.Screen
+        name="rankingCreationModal"
+        options={{
+          title: "",
+          headerShown: false,
+        }}
+      />
       </Stack>
     </ThemeProvider>
   );

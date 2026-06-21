@@ -7,6 +7,7 @@ interface AuthProps {
     onRegister?: (username: string, password: string, first_name: string, last_name: string, bio_text: string, profile_image_uri: string) => Promise<any>;
     onLogin?: (username: string, password: string) => Promise<any>;
     onLogout?: () => Promise<any>;
+    refreshToken?: () => Promise<any>;
 }
 
 // token key and api url to access tokens and fetch from api using secure store
@@ -186,11 +187,57 @@ export const AuthProvider = ({children}: any) => {
         }
     }
 
+    const refreshToken = async () => {
+        try {
+            const response = await fetch(`${TOKEN_API_URL}/token/refresh/`, {
+                method: "post",
+                headers: {
+                    "Content-type": "application/json"
+                },
+                body: JSON.stringify({
+                    refresh: authState.refresh_token,
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to refresh token");
+            }
+
+            const tokenData = await response.json();
+
+            // Update auth state with new tokens
+            if (!tokenData.refresh) {
+                tokenData.refresh = authState.refresh_token;
+                setAuthState({
+                    access_token: tokenData.access,
+                    refresh_token: authState.refresh_token,
+                    authenticated: true,
+                });
+            } else {
+                setAuthState({
+                    access_token: tokenData.access,
+                    refresh_token: tokenData.refresh,
+                    authenticated: true,
+                });
+            }
+
+            // Update tokens in secure store
+            await SecureStore.setItemAsync(TOKEN_KEY, tokenData.access);
+            await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, tokenData.refresh);
+
+            return tokenData;
+        } catch (error) {
+            console.error("There was an error refreshing the token:", error);
+            return {error: true, msg: "There was an error refreshing the token"};
+        }
+    };
+
     // define all the props on our auth context provider component
     const value = {
         onRegister: register,
         onLogin: login,
         onLogout: logout,
+        refreshToken: refreshToken,
         authState,
     };
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
