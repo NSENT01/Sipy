@@ -1,19 +1,16 @@
 
+// File: /_layout.tsx
+// Author: Nithin Senthilvel (nsent01@bu.edu), 06/15/2026
+// Description: Define un authenticated stack screens, and all other stack screens outside of tab screens, as well as their routing
+
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider} from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack, Tabs, router } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
+import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { AuthProvider, useAuth } from '../context/AuthContext'
-import { Redirect } from "expo-router";
-
-import { useColorScheme } from '@/components/useColorScheme';
-import { ActivityIndicator, Pressable } from 'react-native';
-import Ionicons from '@expo/vector-icons/build/Ionicons';
-import Colors from '@/constants/Colors';
-import {Image} from 'react-native'
+import { ScreenState } from '@/components/ScreenState';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -46,6 +43,7 @@ export default function RootLayout() {
   return <AuthenticatedLayout />;
 }
 
+// wrap root layout in auth context provider
 function AuthenticatedLayout() {
   return (
     <AuthProvider>
@@ -55,22 +53,26 @@ function AuthenticatedLayout() {
 }
 
 
-
+// rootlayout main function
 function RootLayoutNav() {
   const { authState } = useAuth();
 
+  // if the auth state hasnt been loaded yet display the activity indicator
   if (authState?.authenticated === null) {
-    return <ActivityIndicator/>; // or loading spinner
+    return <ScreenState loading title="Loading app" />;
   }
 
   
-
+  // default react native component return
   return (
     <ThemeProvider value={DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
+        {/** includes all screens, from unprotected login to tabs to modals */}
         <Stack.Screen name="index" options={{ animation: "slide_from_left" }}/>
         <Stack.Screen name="login" options={{ animation: "slide_from_right" }}/>
         <Stack.Screen name="register" options={{ animation: "slide_from_right" }}/>
+
+        {/** protected screens */}
         <Stack.Screen name="(tabs)"/>
         <Stack.Screen
         name="searchModal"
@@ -93,6 +95,38 @@ function RootLayoutNav() {
       <Stack.Screen
         name="rankingCreationModal"
         options={{
+          title: "",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="profileModal"
+        options={{
+          presentation: "fullScreenModal",
+          title: "",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="postModal"
+        options={{
+          presentation: "fullScreenModal",
+          title: "",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="followModal"
+        options={{
+          presentation: "fullScreenModal",
+          title: "",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="profileEditModal"
+        options={{
+          presentation: "modal",
           title: "",
           headerShown: false,
         }}

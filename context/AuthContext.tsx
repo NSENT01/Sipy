@@ -4,10 +4,14 @@ import * as SecureStore from "expo-secure-store";
 // Define props for auth components
 interface AuthProps {
     authState?: {access_token: string | null, refresh_token: string | null, authenticated: boolean | null};
+    loading?: {registering: boolean, loggingIn: boolean, loggingOut: boolean};
+    error?: string;
     onRegister?: (username: string, password: string, first_name: string, last_name: string, bio_text: string, profile_image_uri: string) => Promise<any>;
     onLogin?: (username: string, password: string) => Promise<any>;
     onLogout?: () => Promise<any>;
     refreshToken?: () => Promise<any>;
+    authFetch?: (url: string, options?: RequestInit) => Promise<Response>;
+    clearError?: () => void;
 }
 
 // token key and api url to access tokens and fetch from api using secure store
@@ -69,6 +73,7 @@ export const AuthProvider = ({children}: any) => {
     const register = async (username: string, password: string, first_name: string, last_name: string, bio_text: string, profile_image_uri: string) => {
         try {
             setIsRegistering(true);
+            setError("");
 
             // Define form data for post method
             const formData = new FormData();
@@ -121,6 +126,7 @@ export const AuthProvider = ({children}: any) => {
     const login = async (username: string, password: string) => {
         try {
             setIsLoggingIn(true);
+            setError("");
 
             // get tokens from simple-jwt token endpoints
             const response = await fetch(`${TOKEN_API_URL}/token/`, {
@@ -166,6 +172,7 @@ export const AuthProvider = ({children}: any) => {
     const logout = async () => {
         try {
             setIsLoggingOut(true);
+            setError("");
 
             // for logout just delete tokens and reset auth state
             await SecureStore.deleteItemAsync(TOKEN_KEY);
@@ -232,13 +239,45 @@ export const AuthProvider = ({children}: any) => {
         }
     };
 
+    const authFetch = async (url: string, options: RequestInit = {}) => {
+        const buildOptions = (accessToken: string | null | undefined) => ({
+            ...options,
+            headers: {
+                ...(options.headers ?? {}),
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+
+        let response = await fetch(url, buildOptions(authState.access_token));
+
+        if (response.status !== 401) {
+            return response;
+        }
+
+        const refreshed = await refreshToken();
+        if (refreshed?.error) {
+            await logout();
+            return response;
+        }
+
+        return await fetch(url, buildOptions(refreshed.access));
+    };
+
     // define all the props on our auth context provider component
     const value = {
         onRegister: register,
         onLogin: login,
         onLogout: logout,
         refreshToken: refreshToken,
+        authFetch: authFetch,
+        clearError: () => setError(""),
         authState,
+        loading: {
+            registering: isRegistering,
+            loggingIn: isLoggingIn,
+            loggingOut: isLoggingOut,
+        },
+        error,
     };
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

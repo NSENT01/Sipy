@@ -1,11 +1,15 @@
+// File: +not-found.tsx
+// Author: Nithin Senthilvel (nsent01@bu.edu), 06/15/2026
+// Description: Not found display for deep routing errors
+
 import { Link, Stack } from 'expo-router';
 import { StyleSheet } from 'react-native';
-
 import { Text, View } from '@/components/Themed';
 
 export default function NotFoundScreen() {
   return (
     <>
+    {/** Screen does not exist display with link to home screen */}
       <Stack.Screen options={{ title: 'Oops!' }} />
       <View style={styles.container}>
         <Text style={styles.title}>This screen doesn't exist.</Text>
@@ -18,6 +22,7 @@ export default function NotFoundScreen() {
   );
 }
 
+// styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,

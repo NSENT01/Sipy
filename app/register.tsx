@@ -1,14 +1,20 @@
+// File: register.tsx
+// Author: Nithin Senthilvel (nsent01@bu.edu), 06/15/2026
+// Description: View for registering a user
+
 import { View, Text, TextInput, Pressable, Keyboard, TouchableWithoutFeedback, Alert, Image } from 'react-native'
 import { useState, useEffect } from 'react'
-import { Redirect, router, Stack } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import  { useAuth } from '../context/AuthContext'
 import { styles } from "../assets/styles/my_styles"
-import Colors from '@/constants/Colors';
 import Ionicons from '@expo/vector-icons/build/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
+import { ScreenState } from '@/components/ScreenState';
 
+// default function export
 const register = () => {
-    const{ authState, onRegister, onLogin } = useAuth();
+    // instantiate auth context variables and functions amd state variables
+    const{ authState, onRegister, onLogin, loading, error: authError, clearError } = useAuth();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [firstName, setFirstName] = useState('');
@@ -18,27 +24,35 @@ const register = () => {
     const [step, setStep] = useState<number>(1);
     const [error, setError] = useState<string>('');
 
+    // when page is loaded clear the error message from other authentication routes
+    useEffect(() => {
+        clearError?.();
+        setError('');
+    }, []);
 
+    // if user is authenticated then route to protected views
     if (authState?.authenticated) {
         return <Redirect href="/(tabs)" />;
     }
 
     
-
+    // function for handling register using auth context onRegister function definition, display error message if errors
     const handleRegister = async () => {
         const result = await onRegister!(username, password, firstName, lastName, bio, profileImage);
         if (result && result.error) {
-            alert(result.msg);
+            setError(result.msg ?? "There was an error registering the user");
         } else {
             const loginResult = await onLogin!(username, password);
 
             if (loginResult?.error) {
-                alert(loginResult.msg);
+                setError(loginResult.msg ?? "There was an error logging in the user");
                 return;
             }
+            setError("");
         }
     }
 
+    // expo image picker library (copy paste from documentation)
     const handleImagePicker = async () => {
         // No permissions request is necessary for launching the image library.
         // Manually request permissions for videos on iOS when `allowsEditing` is set to `false`
@@ -67,10 +81,12 @@ const register = () => {
       };
     
 
+    // function for rendering different react native components based on the registration step
     const renderStep = () => {
         switch (step) {
           case 1:
             return (
+              // first step with user creation
               <>
                 <Text style={styles.title}>First, let's create your account</Text>
       
@@ -104,6 +120,7 @@ const register = () => {
       
           case 2:
             return (
+              // second step with first and last name
               <>
                 <Text style={styles.title}>
                   Enter your name so you can be found!
@@ -144,6 +161,7 @@ const register = () => {
       
           case 3:
             return (
+              //third step with bio
               <>
                 <Text style={styles.title}>
                   Tell people a bit about yourself!
@@ -176,6 +194,7 @@ const register = () => {
       
           case 4:
             return (
+              //last step with profile picture and registration submission
               <>
                 <Text style={styles.title}>
                   Choose your profile picture
@@ -185,9 +204,9 @@ const register = () => {
                 {profileImage && <Image source={{ uri: profileImage }} style={styles.profileImage} />}
                 </Pressable>
       
-                <Pressable  onPress={() => handleRegister()} style={styles.largeButton}>
+                <Pressable  onPress={() => handleRegister()} style={styles.largeButton} disabled={loading?.registering || loading?.loggingIn}>
                   <Text style={{ color: "white", fontSize: 17, fontFamily: 'arial' }}>
-                    Make Profile
+                    {loading?.registering || loading?.loggingIn ? "Creating profile" : "Make Profile"}
                   </Text>
                 </Pressable>
 
@@ -207,10 +226,13 @@ const register = () => {
         }
       };
 
-
+    // main react native component returned by default export function
   return (
+
+    // enables user to touch out of keyboard 
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.loginContainer}>
+       {/** back button if stack is not empty below this item */}
         <Pressable
             onPress={() => {
                 if (router.canGoBack()) {
@@ -224,7 +246,15 @@ const register = () => {
             <Ionicons name="arrow-back" size={32} color="#2D5A3D" />
         </Pressable>
         
+        {/** render step component from prior */}
         {renderStep()}
+
+        {/** handle error and loading states */}
+        <ScreenState
+          loading={loading?.registering || loading?.loggingIn}
+          error={error || authError}
+          compact
+        />
     </View>
     </TouchableWithoutFeedback>
   );

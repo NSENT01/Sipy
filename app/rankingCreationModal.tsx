@@ -1,5 +1,9 @@
-import { View, Text, ScrollView, TextInput, Pressable, FlatList, Modal, Alert, Image } from 'react-native'
-import { useEffect, useState, ReactNode} from 'react'
+// File: rankingCreationModal.tsx
+// Author: Nithin Senthilvel (nsent01@bu.edu), 06/15/2026
+// Description: Modal for user to create a ranking of a drink associated with a cafe
+
+import { View, Text, ScrollView, TextInput, Pressable, Alert, Image } from 'react-native'
+import { useState, ReactNode} from 'react'
 import { useLocalSearchParams, Redirect, router } from 'expo-router'
 import { useAuth } from '../context/AuthContext'
 import { styles } from '../assets/styles/my_styles'
@@ -7,14 +11,18 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import * as ImagePicker from 'expo-image-picker';
 import Slider from '@react-native-community/slider';
+import { ScreenState } from '@/components/ScreenState';
 
+// import api url from .env
 const API_URL = process.env.EXPO_PUBLIC_API_URL as string;
 
+// typescript drink type for incoming data shape
 type Drink = {
     name: string,
     id: number,
 }
 
+//typescript ranking type for incoming data shape
 type Ranking = {
     score: number,
     notes: string,
@@ -22,9 +30,10 @@ type Ranking = {
     drink: Drink,
 }
 
-
+// default export function
 const rankingCreationModal = () => {
-    const { authState, onLogout, refreshToken } = useAuth();
+  // instantiage path params, auth context variables and functions, and state variables
+    const { authState, authFetch } = useAuth();
     const cafe = useLocalSearchParams<{
         placeId?: string;
         name?: string;
@@ -43,8 +52,10 @@ const rankingCreationModal = () => {
     const [drinkName, setDrinkName] = useState("");
     const [imageUri, setImageUri] = useState(null);
     const [error, setError] = useState("");
+    const [submitting, setSubmitting] = useState(false);
     const [rankingDetails, setRankingDetails] = useState<Ranking | null>(null);
 
+    // define enum categories for drinks with appropriate icons, and dynamic styling based on selected enum
     const categoryIcon: Record<string, ReactNode> = {
       Coffee: <Ionicons name="cafe-outline" size={24} color={drinkCategory === "Coffee" ? "white" : "black"} />,
       Matcha: <MaterialCommunityIcons name="bowl-mix-outline" size={24} color={drinkCategory === "Matcha" ? "white" : "black"} />,
@@ -57,6 +68,7 @@ const rankingCreationModal = () => {
       Other: <Ionicons name="grid-outline" size={24} color={drinkCategory === "Other" ? "white" : "black"} />,
     };
 
+    // expo image picker function from node package (copy paste from documentation)
       const handleImagePicker = async () => {
               // No permissions request is necessary for launching the image library.
               // Manually request permissions for videos on iOS when `allowsEditing` is set to `false`
@@ -83,16 +95,8 @@ const rankingCreationModal = () => {
                 setImageUri( result.assets[0].uri as any);
               }
             };
-    
-      const handleLogout = async () => {
-        const result = await onLogout!();
-        if (result && result.error) {
-            alert(result.msg);
-        } else {
-            console.log("Logout successful");
-        }
-      };
-
+        
+        // handle the submission of a rankign, create form data object and put in body data of HTTP post request
       const handleRankingPost = async () => {
         // Define form data for post method
         const formData = new FormData();
@@ -112,47 +116,56 @@ const rankingCreationModal = () => {
         } as any);
 
         try {
-            const response = await fetch(`${API_URL}/create_ranking/`, {
+          // set loading state
+            setSubmitting(true);
+            const response = await authFetch!(`${API_URL}/create_ranking/`, {
               method: 'POST',
               headers: {
-                'Authorization': `Bearer ${authState?.access_token}`
               },
               body: formData,
             })
-      
+            
+            // if api call fails log, set error for error state and return
             if (!response.ok) {
-              if (response.status === 401) {
-                // Token is invalid, try to refresh it
-                const refreshed = await refreshToken!();
-                if (refreshed?.error) {
-                  handleLogout();
-                }
-              }
-              console.log(await response.text());
-              return;
+              const responseText = await response.text();
+              console.log(responseText);
+              setError("Failed to write ranking to db");
+              return false;
               
             }
-            setError("");
-      
-            const responseData = await response.json();
-            setRankingDetails(responseData);
+            setError(""); 
+            
+            // otherwise set ranking details
+            const responseText = await response.text();
+            if (responseText) {
+              const responseData = JSON.parse(responseText);
+              setRankingDetails(responseData);
+            }
+            return true;
           } catch (error) {
+            // error handling
             console.error('Error writing ranking to db:', error);
             setError('Failed to write ranking to db');
+            return false;
+          } finally {
+            // close loading state
+            setSubmitting(false);
           }
       }
 
-
+      // react native component returned
   return (
     <View style={styles.backdropContainer}>
       <ScrollView style={styles.rankingModal}>
         <View style={styles.modalTitle}>
+          {/** header with cafe name and exit navigation */}
           <Text style={styles.modalTitleText}>{cafe.name}</Text>
           <Pressable onPress={() => router.back()}>
             <Ionicons name="close" size={24} color="black"/>
           </Pressable>
         </View>
 
+        {/** inputs for ranking creation */}
         <View style={styles.modalCategory}>
           <Text>Drink name</Text>
           <TextInput style={styles.mainInput} placeholderTextColor="gray" value={drinkName} onChangeText={setDrinkName} placeholder='Drink name'/>
@@ -161,13 +174,16 @@ const rankingCreationModal = () => {
         <View style={styles.modalCategory}>
           <Text style={styles.modalText}>Add to my list of </Text>
           <ScrollView horizontal style={{flexDirection: "row"}}>
+
+            {/** enum map to display, use drink category state variable to allow only one enum selection */}
           {Object.keys(categoryIcon).map((category) => (
           <Pressable key={category} onPress={async () => {setDrinkCategory(category)}} style={category === drinkCategory ? styles.drinkCategorySelect : styles.drinkCategory}>
             <View style={{flexDirection: "row", alignItems: "center"}}>{categoryIcon[category]}<Text style={category === drinkCategory ? styles.drinkTextSelected : styles.drinkText}>  {category}</Text></View>
           </Pressable>))}
           </ScrollView>
         </View>
-
+          
+          {/** node package for slider, set value and fix to one decimal place */}
         <View style={styles.modalCategory}>
           <Text style={styles.modalText}>How was it?</Text>
           <Slider
@@ -183,7 +199,8 @@ const rankingCreationModal = () => {
           />
           <Text style={{alignSelf: "center", fontSize: 24, fontFamily: "serif", color:"#2D5A3D"}}>{score?.toFixed(1)}</Text>
         </View>
-
+          
+          {/** expo image picker package for adding image to post */}
         <View style={styles.modalCategory}>
         <Text style={styles.modalText}>Add an image</Text>
           <Pressable onPress={handleImagePicker} style={{borderRadius: 16, width: 300, height: 300, backgroundColor: "lightgray", justifyContent: "center", alignItems: "center", alignSelf: "center", borderStyle: "dashed", borderWidth: 1, borderColor: "gray"}}>
@@ -194,17 +211,21 @@ const rankingCreationModal = () => {
             )}
           </Pressable>
         </View>
-
+           {/** generic text input for notes on drink */}
         <View style={styles.modalCategory}>
           <Text style={styles.modalText}>Add notes</Text>
           <TextInput value={notes} onChangeText={setNotes} style={{ padding: 15, alignItems: "flex-start", justifyContent: "flex-start", borderRadius: 12, width: "100%", height: 150, borderWidth: 1, borderColor: "gray"}} textAlignVertical="top" placeholder='Add your notes here' placeholderTextColor={"gray"}></TextInput>
         </View>
-
-        <Pressable onPress={async () => {
-          await handleRankingPost();
-          router.back()
+        {/** on submit handle loading and error states */}
+        <ScreenState loading={submitting} error={error} compact />
+          {/** on loading state disable submit because POST is not idempotent, close on success */}
+        <Pressable disabled={submitting} onPress={async () => {
+          const created = await handleRankingPost();
+          if (created) {
+            router.back()
+          }
         }} style={styles.submitModal}>
-          <Text style={{color: "white", fontSize: 20, fontWeight: 400, fontFamily: "serif"}}>Submit</Text>
+          <Text style={{color: "white", fontSize: 20, fontWeight: 400, fontFamily: "serif"}}>{submitting ? "Submitting" : "Submit"}</Text>
         </Pressable>
       </ScrollView>
     </View>

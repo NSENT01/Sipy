@@ -1,45 +1,58 @@
+// File: (tabs)/_layout.tsx
+// Author: Nithin Senthilvel (nsent01@bu.edu), 06/15/2026
+// Description: Define tabs routing and tabs in protected view
+
 import React, { useEffect, useState, createContext } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Link, Redirect, router, Stack, Tabs } from 'expo-router';
-import { Pressable, Image, Text } from 'react-native';
-
+import { Redirect, router, Tabs } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+import { Alert, Pressable, Image, Text, View } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import { useAuth } from '../../context/AuthContext';
 
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
+// static assets, environment variables and context data initialized
 const logo = require("../../assets/images/sipy.png")
 export const API_URL = process.env.EXPO_PUBLIC_API_URL as string;
 export const ProfileContext = createContext<any>(null);
+export const ProfileRefreshContext = createContext<() => Promise<void>>(async () => {});
+export const ProfileStatusContext = createContext<{ loading: boolean, error: string }>({ loading: false, error: "" });
 
-
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
-
+// default export of tab, defines the tab layout, navigation, context hooks, and headers
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const headerValue = useClientOnlyValue(false, true);
 
-  const { authState, onLogout, refreshToken } = useAuth();
+  // define our auth components from our auth context and state variables
+  const { authState, onLogout, authFetch } = useAuth();
   const [error, setError] = useState<string>("");
+  const [profileLoading, setProfileLoading] = useState<boolean>(false);
   const [profileData, setProfileData] = useState<any>(null);
 
+  //get the users profile when their tokens are authenticated and authorized
   useEffect(() => {
     if (authState?.access_token && authState?.authenticated) {
       getProfile();
     }
   }, [authState]);
 
+  // get the users profile when any data is modified by the user
+  useFocusEffect(
+    React.useCallback(() => {
+      if (authState?.access_token && authState?.authenticated) {
+        getProfile();
+      }
+    }, [authState?.access_token, authState?.authenticated])
+  );
+
+  // if the user is not authenticated, route them to the login page
   if (!authState?.authenticated) {
     return <Redirect href="/login" />;
   }
 
+  // log the user out using auth context
   const handleLogout = async () => {
     const result = await onLogout!();
     if (result && result.error) {
@@ -49,24 +62,69 @@ export default function TabLayout() {
     }
   };
 
+  // alert to confirm that a user would like to delete their profile, called delete profile function
+  const showDeleteProfileAlert = () =>
+    Alert.alert(
+      'Delete Profile',
+      'Are you sure you want to delete your profile? This cannot be undone.',
+      [
+        {
+          text: 'Delete',
+          onPress: async () => await handleProfileDelete(),
+          style: 'destructive',
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ],
+      { cancelable: true },
+    );
+
+  // deletes a users profile by making DELETE request to API
+  const handleProfileDelete = async () => {
+    try {
+      const deleteProfile = async () => {
+        return await authFetch!(`${API_URL}/delete_profile/`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": 'application/json',
+          }
+        })
+      }
+
+      let response = await deleteProfile()
+
+      // catch error
+      if (!response.ok) {
+        console.log(await response.text());
+        return;
+      }
+
+      await handleLogout();
+    } catch (error) {
+      // error handling
+      console.error("there was an error deleting this profile:", error);
+      setError("There was an error deleting this profile")
+    }
+  }
+
+  // fetch the users profile from the API
   const getProfile = async () => {
     try {
-      const response = await fetch(`${API_URL}/get_profile/`, {
+      setProfileLoading(true);
+      const response = await authFetch!(`${API_URL}/get_profile/`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authState.access_token}`
         }
       });
+
+      // catch errors
       if (!response.ok) {
-        if (response.status === 401) {
-          // Token is invalid, try to refresh it
-          const refreshed = await refreshToken!();
-          if (refreshed?.error) {
-            handleLogout();
-          }
-        }
-        console.log(await response.text());
+        const responseText = await response.text();
+        console.log(responseText);
+        setError('Failed to fetch profile');
         return;
         
       }
@@ -74,15 +132,23 @@ export default function TabLayout() {
       setError("");
       setProfileData(data);
     } catch (error) {
+      //error handling
       console.error('Error fetching profile:', error);
       setError('Failed to fetch profile');
+    } finally {
+      setProfileLoading(false);
     }
   };
 
   
-
+  // react native component that is rendered on the users screen
   return (
+    // provide profile context data to all tabs for use in displaying information
     <ProfileContext.Provider value={profileData}>
+    <ProfileRefreshContext.Provider value={getProfile}>
+    <ProfileStatusContext.Provider value={{ loading: profileLoading, error }}>
+
+      {/** Define the tabs supported in the protected logged in view of this app */}
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
@@ -101,6 +167,8 @@ export default function TabLayout() {
           return <Pressable onPress={handleLogout}><Ionicons style={{marginRight: 20}}name="exit" size={24} color="gray" /></Pressable>
         }
       }}>
+
+      {/** Feed tab file definition, icon, and headers */}
       <Tabs.Screen
         name="index"
         options={{
@@ -108,6 +176,8 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Ionicons name="newspaper-outline" size={24} color="black" />,
         }}
       />
+
+      {/** List tab file definition, icon, and headers */}
       <Tabs.Screen
         name="list"
         options={{
@@ -115,6 +185,8 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Ionicons name="list-outline" size={24} color="black" />,
         }}
       />
+
+      {/** Search tab file definition, icon, and headers */}
       <Tabs.Screen
         name="search"
         options={{
@@ -132,6 +204,8 @@ export default function TabLayout() {
           }
         }}
       />
+
+      {/** Leaderboard tab file definition, icon, and headers */}
       <Tabs.Screen
         name="leaderboard"
         options={{
@@ -139,6 +213,8 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Ionicons name="trophy-outline" size={24} color="black" />,
         }}
       />
+
+      {/** Profile tab file definition, icon, and headers (including profile deletion) */}
       <Tabs.Screen
         name="profile"
         options={{
@@ -150,14 +226,25 @@ export default function TabLayout() {
             shadowOpacity: 0,
           },
           headerLeft: () => {
-            return <Text style={{ fontWeight: 'bold', fontSize: 20, marginLeft: 20 }}>{profileData.first_name} {profileData.last_name}</Text>;
+            return <Text style={{ fontWeight: 'bold', fontSize: 20, marginLeft: 20 }}>{profileData?.first_name ?? ""} {profileData?.last_name ?? ""}</Text>;
           },
           headerRight: () => {
-            return <Pressable onPress={handleLogout}><Ionicons style={{marginRight: 20}}name="exit" size={24} color="gray" /></Pressable>
+            return (
+              <View style={{ flexDirection: "row", alignItems: "center", marginRight: 20 }}>
+                <Pressable onPress={showDeleteProfileAlert} hitSlop={10}>
+                  <Ionicons style={{ marginRight: 18 }} name="trash-outline" size={24} color="black" />
+                </Pressable>
+                <Pressable onPress={handleLogout} hitSlop={10}>
+                  <Ionicons name="exit" size={24} color="gray" />
+                </Pressable>
+              </View>
+            )
           }
           }}
       />
     </Tabs>
+    </ProfileStatusContext.Provider>
+    </ProfileRefreshContext.Provider>
     </ProfileContext.Provider>
   );
 }
